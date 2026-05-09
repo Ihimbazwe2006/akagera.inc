@@ -41,9 +41,6 @@ function GoogleAuthButton({ onLogin }) {
         if (onLogin) {
           onLogin(data.user);
         }
-
-        // User stays on current page after login
-        // window.location.href = "/dashboard";
       } else {
         setError(data.detail || "Login failed. Please try again.");
       }
