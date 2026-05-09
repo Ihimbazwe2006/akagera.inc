@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
@@ -23,7 +24,7 @@ function PaymentForm({ user, service, showToast }) {
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentIntentId, setPaymentIntentId] = useState(null);
 
-  const API = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+  const API = process.env.REACT_APP_API_URL || 'http://akagerainc.onrender.com/api';
 
   // 1. Create PaymentIntent ONCE when page loads
   useEffect(() => {
