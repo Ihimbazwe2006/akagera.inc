@@ -7,11 +7,13 @@ import './index.css';
 // Pages and Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import CookieConsent from './components/CookieConsent';
 import Home from './pages/Home';
 import Apps from './pages/Apps';
 import AppDetails from './pages/AppDetails';
 import Services from './pages/Services';
 import Payment from './pages/Payment';
+import Contact from './pages/Contact';
 import Dashboard from './pages/Dashboard';
 import AdminPanel from './pages/AdminPanel';
 import NotFound from './pages/NotFound';
@@ -76,6 +78,7 @@ function App() {
           <Route path="/apps/:id" element={<AppDetails />} />
           <Route path="/services" element={<Services showToast={showToast} />} />
           <Route path="/payment" element={<Payment user={user} showToast={showToast} />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/dashboard" element={user ? <Dashboard user={user} /> : <Home onLogin={handleLogin} />} />
           <Route path="/admin-panel-xyz123" element={<AdminPanel />} />
           <Route path="*" element={<NotFound />} />
@@ -83,6 +86,8 @@ function App() {
       </main>
 
       <Footer />
+
+      <CookieConsent />
 
       {toast && (
         <Toast 

@@ -310,7 +310,7 @@ function AdminDashboard({ onLogout }) {
     try {
       setLoading(true);
       const response = await fetch(
-        `http://localhost:8000/api/admin-xyz789-control/images?password=${adminPassword}`
+        `${API_BASE_URL}/admin-xyz789-control/images?password=${adminPassword}`
       );
       const data = await response.json();
       
@@ -318,7 +318,7 @@ function AdminDashboard({ onLogout }) {
       const imagesWithData = await Promise.all((data.images || []).map(async (img) => {
         try {
           const dataResponse = await fetch(
-            `http://localhost:8000/api/admin-xyz789-control/images/${img.id}/data?password=${adminPassword}`
+            `${API_BASE_URL}/admin-xyz789-control/images/${img.id}/data?password=${adminPassword}`
           );
           const imageData = await dataResponse.json();
           return { ...img, imageData: imageData.data };
@@ -351,8 +351,8 @@ function AdminDashboard({ onLogout }) {
   const handleSaveApp = async () => {
     try {
       const url = editingApp 
-        ? `http://localhost:8000/api/admin-xyz789-control/apps/${editingApp.id}?password=${adminPassword}`
-        : `http://localhost:8000/api/admin-xyz789-control/apps?password=${adminPassword}`;
+        ? `${API_BASE_URL}/admin-xyz789-control/apps/${editingApp.id}?password=${adminPassword}`
+        : `${API_BASE_URL}/admin-xyz789-control/apps?password=${adminPassword}`;
       
       const method = editingApp ? 'PUT' : 'POST';
       
@@ -419,8 +419,8 @@ function AdminDashboard({ onLogout }) {
   const handleSaveService = async () => {
     try {
       const url = editingService
-        ? `http://localhost:8000/api/admin-xyz789-control/services/${editingService.id}?password=${adminPassword}`
-        : `http://localhost:8000/api/admin-xyz789-control/services?password=${adminPassword}`;
+        ? `${API_BASE_URL}/admin-xyz789-control/services/${editingService.id}?password=${adminPassword}`
+        : `${API_BASE_URL}/admin-xyz789-control/services?password=${adminPassword}`;
       
       const method = editingService ? 'PUT' : 'POST';
       
@@ -475,7 +475,7 @@ function AdminDashboard({ onLogout }) {
       console.log('Uploading image:', file.name);
       
       const response = await fetch(
-        `https://akagerainc.onrender.com//api/admin-xyz789-control/images?password=${adminPassword}`,
+        `${API_BASE_URL}/admin-xyz789-control/images?password=${adminPassword}`,
         {
           method: 'POST',
           body: formData
@@ -531,7 +531,7 @@ function AdminDashboard({ onLogout }) {
     if (window.confirm('Delete this service?')) {
       try {
         await fetch(
-          `http://localhost:8000/api/admin-xyz789-control/services/${serviceId}?password=${adminPassword}`,
+          `${API_BASE_URL}/admin-xyz789-control/services/${serviceId}?password=${adminPassword}`,
           { method: 'DELETE' }
         );
         fetchServices();
@@ -545,7 +545,7 @@ function AdminDashboard({ onLogout }) {
     if (window.confirm('Delete this image?')) {
       try {
         await fetch(
-          `http://localhost:8000/api/admin-xyz789-control/images/${imageId}?password=${adminPassword}`,
+          `${API_BASE_URL}/admin-xyz789-control/images/${imageId}?password=${adminPassword}`,
           { method: 'DELETE' }
         );
         fetchImages();

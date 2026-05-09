@@ -68,7 +68,7 @@ function Navbar({ user, onLogout }) {
             </li>
 
             <li><Link to="/services">Services</Link></li>
-            <li><Link to="/#contact">Contact</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
           </ul>
 
           {/* Authentication Buttons */}
@@ -106,7 +106,7 @@ function Navbar({ user, onLogout }) {
               <li><Link to="/apps?filter=mobile" onClick={() => setMobileMenuOpen(false)}>Mobile Apps</Link></li>
               <li><Link to="/apps?filter=web" onClick={() => setMobileMenuOpen(false)}>Web Apps</Link></li>
               <li><Link to="/services" onClick={() => setMobileMenuOpen(false)}>Services</Link></li>
-              <li><Link to="/#contact" onClick={() => setMobileMenuOpen(false)}>Contact</Link></li>
+              <li><Link to="/contact" onClick={() => setMobileMenuOpen(false)}>Contact</Link></li>
             </ul>
             <div className="mobile-auth">
               {user ? (

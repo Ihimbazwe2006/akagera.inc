@@ -131,7 +131,10 @@ function Home({ onLogin, user }) {
             <div className="hero-content">
               <div className="hero-text" data-aos="fade-right">
                 <h1>Akagera Inc – Smart Mobile Solutions</h1>
-                <p>
+                <p style={{
+                  fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
+                  lineHeight: '1.6'
+                }}>
                   Akagera Inc is dedicated to building powerful, user-friendly mobile applications that solve real-world problems and drive productivity. Our mission is to empower individuals and businesses across Africa with innovative digital solutions, from business tools to educational platforms. Discover our suite of applications, each crafted to deliver value, reliability, and a seamless user experience tailored for the African market and beyond.
                 </p>
                 <div className="hero-buttons">
@@ -517,7 +520,7 @@ function Home({ onLogin, user }) {
               >
                 {app.app_logo ? (
                   <img
-                    src={`http://localhost:8000/uploads/${app.app_logo}`}
+                    src={`https://akagerainc.onrender.com/uploads/${app.app_logo}`}
                     alt={app.name}
                     style={{
                       width: "100%",
