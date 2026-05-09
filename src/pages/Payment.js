@@ -14,12 +14,35 @@ function PaymentForm({ user, service, showToast }) {
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [cardComplete, setCardComplete] = useState(false);
+  const [cardError, setCardError] = useState(null);
   const [licenseKey, setLicenseKey] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setCardError(null);
+
+    if (!stripe || !elements) {
+      setError('Stripe is not ready yet. Please wait a moment and try again.');
+      setLoading(false);
+      return;
+    }
+
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setError('Payment card input is not loaded. Refresh the page and try again.');
+      setLoading(false);
+      return;
+    }
+
+    if (!cardComplete) {
+      setError('Please enter your card details before submitting payment.');
+      setLoading(false);
+      return;
+    }
+
     try {
       // 1. Create payment intent on backend
       const { data } = await axios.post(
@@ -36,7 +59,7 @@ function PaymentForm({ user, service, showToast }) {
       // 2. Confirm card payment
       const result = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
-          card: elements.getElement(CardElement),
+          card: cardElement,
           billing_details: {
             name: user.name,
             email: user.email,
@@ -106,13 +129,20 @@ function PaymentForm({ user, service, showToast }) {
       <div className="form-group">
         <label>Card Details</label>
         <div style={{ padding: 12, border: '1px solid #ccc', borderRadius: 8, background: '#fff' }}>
-          <CardElement options={{ style: { base: { fontSize: '18px' } } }} />
+          <CardElement
+            options={{ style: { base: { fontSize: '18px' } } }}
+            onChange={(event) => {
+              setCardError(event.error ? event.error.message : null);
+              setError(event.error ? event.error.message : null);
+              setCardComplete(event.complete);
+            }}
+          />
         </div>
       </div>
       <button type="submit" className="btn btn-primary btn-large" disabled={loading || !stripe || !elements} style={{ width: '100%' }}>
         {loading ? 'Processing...' : `Pay $${parseFloat(service.price).toFixed(2)}`}
       </button>
-      {error && <div style={{ color: '#ff6b6b', marginTop: 16, fontWeight: 600 }}>{error}</div>}
+      {(error || cardError) && <div style={{ color: '#ff6b6b', marginTop: 16, fontWeight: 600 }}>{error || cardError}</div>}
       <div style={{ marginTop: 20, fontSize: '0.95rem', color: 'var(--dark-gray)', background: '#e3f2fd', padding: 12, borderRadius: 8 }}>
         <strong>🔒 Your card information is protected and never stored. Only the allowed amount will be charged.</strong>
       </div>
