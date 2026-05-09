@@ -11,7 +11,7 @@ if (!stripePublishableKey) {
   console.error('Missing REACT_APP_STRIPE_PUBLISHABLE_KEY in frontend/.env');
 }
 const stripePromise = loadStripe(stripePublishableKey);
-const API = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API = process.env.REACT_APP_API_URL || 'http://akagerainc.onrender.com/api';
 
 function PaymentForm({ user, service, showToast }) {
   const stripe = useStripe();
