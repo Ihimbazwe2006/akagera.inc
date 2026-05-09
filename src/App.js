@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import './index.css';
@@ -24,6 +24,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Initialize AOS and check user session
   useEffect(() => {
@@ -59,6 +60,7 @@ function App() {
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
     showToast('Successfully logged in!');
+    navigate('/dashboard');
   };
 
   const handleLogout = () => {
