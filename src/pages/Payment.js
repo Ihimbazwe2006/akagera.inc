@@ -6,7 +6,11 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 import axios from 'axios';
 import './Payment.css';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_test_51TUA0OIioeHjKlEEFZlAW7JqDx5dJ2nbHbu1mSnlSXV8qmp53ilmp6ILDD3nnVR0mJ46Ejyw6C6GgdOyrijki8Zn00Uw8flgB3');
+const stripePublishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
+if (!stripePublishableKey) {
+  console.error('Missing REACT_APP_STRIPE_PUBLISHABLE_KEY in frontend/.env');
+}
+const stripePromise = loadStripe(stripePublishableKey);
 
 function PaymentForm({ user, service, showToast }) {
   const stripe = useStripe();
