@@ -8,8 +8,8 @@
   top: 0;
   left: 0;
   right: 0;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(90deg, #0B3C5D 0%, #000 100%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
   z-index: 1000;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -41,7 +41,7 @@
   text-decoration: none;
   font-size: 1.8rem;
   font-weight: 700;
-  color: #0B3C5D;
+  color: #ffffff;
   transition: color 0.3s ease;
   padding: 4px 0;
   border: none;
@@ -50,14 +50,14 @@
 }
 
 .brand-link:hover {
-  color: #0B3C5D;
+  color: #ffffff;
   background: transparent;
 }
 
 .logo-icon {
   font-size: 2.2rem;
   display: inline-block;
-  color: #0B3C5D;
+  color: #ffffff;
   cursor: default;
 }
 
@@ -65,7 +65,7 @@
   font-family: 'Dancing Script', 'Playwrite Deutschland Schulausgabenschrift', sans-serif;
   font-weight: 700;
   letter-spacing: 0.2px;
-  color: #0B3C5D;
+  color: #ffffff;
   font-size: 1.8rem;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .navbar-links a {
-  color: #0B3C5D;
+  color: #ffffff;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
@@ -101,7 +101,7 @@
 }
 
 .navbar-links a:hover {
-  color: #1a5a7f;
+  color: #d6e7ff;
 }
 
 .navbar-links a:hover i {
@@ -132,14 +132,14 @@
   position: absolute;
   top: 100%;
   left: 0;
-  background: white;
-  border: 1px solid #e0e0e0;
+  background: #0B3C5D;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   list-style: none;
   padding: 10px 0;
   margin: 10px 0 0 0;
   min-width: 200px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
@@ -161,7 +161,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
-  color: #333;
+  color: #ffffff;
   font-size: 0.9rem;
   font-weight: 400;
   transition: all 0.3s ease;
@@ -173,8 +173,8 @@
 }
 
 .dropdown-menu a:hover {
-  background: #f5f5f5;
-  color: #000;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
   padding-left: 25px;
 }
 
@@ -202,27 +202,32 @@
   align-items: center;
   gap: 6px;
   text-decoration: none;
-  background: #0B3C5D;
+  background: #ffffff;
+  color: #0B3C5D;
+  border: 1px solid #0B3C5D;
 }
 
 .btn-primary {
-  background: #000;
-  color: white;
+  background: #ffffff;
+  color: #0B3C5D;
+  border: 1px solid #0B3C5D;
 }
 
 .btn-primary:hover {
-  background: #333;
+  background: #e6e6e6;
+  color: #0B3C5D;
   transform: translateY(-2px);
 }
 
 .btn-secondary {
-  background: #0B3C5D;
-  color: #f1f1f1;
-  border: 1px solid #ddd;
+  background: #ffffff;
+  color: #0B3C5D;
+  border: 1px solid #0B3C5D;
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: #e6e6e6;
+  color: #0B3C5D;
 }
 
 .btn-outline {
@@ -238,7 +243,7 @@
 
 /* Dashboard Button Icon */
 .btn-secondary .fas.fa-user-circle {
-  color: #fafafa;
+  color: #0B3C5D;
 }
 
 /* Mobile Menu */
@@ -246,7 +251,7 @@
   display: none;
   background: none;
   border: none;
-  color: #444444;
+  color: #ffffff;
   cursor: pointer;
   font-size: 1.5rem;
   padding: 5px;
@@ -258,11 +263,15 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(180deg, #0B3C5D 0%, #000 100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   padding: 20px;
-  border-top: 2px solid #000;
+  border-top: 2px solid #0B3C5D;
   animation: slideDown 0.3s ease;
+}
+
+.navbar-container.mobile-open {
+  background: linear-gradient(90deg, #0B3C5D 0%, #000 100%);
 }
 
 @keyframes slideDown {
@@ -287,8 +296,8 @@
 }
 
 .mobile-navbar-links a {
-  color: #f3f3f3;
-  font-weight: 400;
+  color: #ffffff;
+  font-weight: 500;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
@@ -302,7 +311,7 @@
 }
 
 .mobile-navbar-links a:hover {
-  color: #000;
+  color: #e5e5e5;
 }
 
 .mobile-auth {
@@ -315,6 +324,11 @@
 @media (max-width: 768px) {
   .mobile-menu-toggle {
     display: block;
+    color: #0B3C5D;
+  }
+
+  .navbar-container.mobile-open .mobile-menu-toggle {
+    color: #0B3C5D;
   }
 
   .navbar-links {

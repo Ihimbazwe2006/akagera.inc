@@ -41,7 +41,7 @@ function Navbar({ user, onLogout }) {
   };
 
   return (
-    <nav className={`navbar-container ${isVisible ? 'navbar-visible' : 'navbar-hidden'}`}>
+    <nav className={`navbar-container ${isVisible ? 'navbar-visible' : 'navbar-hidden'} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
       <div className="container">
         <div className="navbar">
           <div className="navbar-brand">
