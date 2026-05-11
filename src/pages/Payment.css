@@ -5,13 +5,42 @@
   padding-top: 60px;
   padding-bottom: 60px;
   background-color: var(--light-gray);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.payment-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+}
+
+.payment-container > div {
+  position: relative;
+  z-index: 2;
+}
+
+.payment-form-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .payment-card {
-  background: var(--white);
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: var(--box-shadow);
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .payment-success {

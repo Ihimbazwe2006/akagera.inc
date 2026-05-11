@@ -114,10 +114,22 @@ function Home({ onLogin, user }) {
 
   const buildServiceImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
-    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:8000';
-    const normalized = imageUrl.replace(/^\/+/, '');
-    const imagePath = normalized.startsWith('uploads/') ? normalized : `uploads/${normalized}`;
-    return `${baseUrl}/${imagePath}`;
+    if (/^https?:\/\//.test(imageUrl)) {
+      return imageUrl;
+    }
+
+    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || window.location.origin;
+    let normalized = imageUrl.replace(/^\/+/, '');
+
+    if (!normalized.startsWith('uploads/')) {
+      if (normalized.startsWith('services/')) {
+        normalized = `uploads/${normalized}`;
+      } else {
+        normalized = `uploads/services/${normalized}`;
+      }
+    }
+
+    return `${baseUrl}/${normalized}`;
   };
 
   // Stats data
@@ -143,7 +155,7 @@ function Home({ onLogin, user }) {
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)',
                   lineHeight: '1.6'
                 }}>
-                  Akagera Inc is dedicated to building powerful, user-friendly mobile applications that solve real-world problems and drive productivity. Our mission is to empower individuals and businesses across Africa with innovative digital solutions, from business tools to educational platforms. Discover our suite of applications, each crafted to deliver value, reliability, and a seamless user experience tailored for the African market and beyond.
+                  Akagera Inc is dedicated to building powerful, user-friendly mobile applications and websites that solve real-world problems and drive productivity. Our mission is to empower individuals and businesses across the world with innovative digital solutions, from business tools to educational platforms.
                 </p>
                 <div className="hero-buttons">
                   <button 
@@ -775,21 +787,22 @@ function Home({ onLogin, user }) {
           <div className="contact-content" data-aos="fade-up">
             <h2>Get in Touch</h2>
             <p>
-              Have questions or need support? Our team is here to help you with any inquiries about our products, services, or partnership opportunities. Reach out to us and let's build something great together.
+              Have questions or need support? Our team is here to help you with any inquiries about our products, services, or partnership opportunities.
+              Reach out to us and let's build something great together.
             </p>
 
             <div className="contact-info">
               <div className="contact-item" data-aos="fade-up" data-aos-delay="100">
-                <h3>📧 Email</h3>
+                <h3><i className="fas fa-envelope" style={{ marginRight: '10px' }}></i>Gmail</h3>
                 <p>akagerainc@gmail.com</p>
-                <a href="mailto:akagerainc@gmail.com" className="btn btn-outline" 
+                <a href="mailto:akagerainc@gmail.com" className="btn btn-outline"
                    style={{ color: 'white', borderColor: 'white', marginTop: '10px' }}>
                   Email Us
                 </a>
               </div>
 
               <div className="contact-item" data-aos="fade-up" data-aos-delay="200">
-                <h3>📞 Phone</h3>
+                <h3><i className="fas fa-phone" style={{ marginRight: '10px' }}></i>Phone</h3>
                 <p>+250 795 226 123</p>
                 <a href="tel:+250795226123" className="btn btn-outline"
                    style={{ color: 'white', borderColor: 'white', marginTop: '10px' }}>
@@ -798,9 +811,9 @@ function Home({ onLogin, user }) {
               </div>
 
               <div className="contact-item" data-aos="fade-up" data-aos-delay="300">
-                <h3>💬 WhatsApp</h3>
+                <h3><i className="fab fa-whatsapp" style={{ marginRight: '10px' }}></i>WhatsApp</h3>
                 <p>Chat with us on WhatsApp</p>
-                <a href="https://wa.me/250795226123" target="_blank" rel="noopener noreferrer" 
+                <a href="https://wa.me/250795226123" target="_blank" rel="noopener noreferrer"
                    className="btn btn-outline"
                    style={{ color: 'white', borderColor: 'white', marginTop: '10px' }}>
                   Chat Now

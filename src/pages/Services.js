@@ -37,10 +37,22 @@ function Services({ showToast }) {
 
   const buildServiceImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
-    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:8000';
-    const normalized = imageUrl.replace(/^\/+/, '');
-    const imagePath = normalized.startsWith('uploads/') ? normalized : `uploads/${normalized}`;
-    return `${baseUrl}/${imagePath}`;
+    if (/^https?:\/\//.test(imageUrl)) {
+      return imageUrl;
+    }
+
+    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || window.location.origin;
+    let normalized = imageUrl.replace(/^\/+/, '');
+
+    if (!normalized.startsWith('uploads/')) {
+      if (normalized.startsWith('services/')) {
+        normalized = `uploads/${normalized}`;
+      } else {
+        normalized = `uploads/services/${normalized}`;
+      }
+    }
+
+    return `${baseUrl}/${normalized}`;
   };
 
   const handleSelectService = (service) => {

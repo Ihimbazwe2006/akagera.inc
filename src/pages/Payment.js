@@ -11,7 +11,19 @@ if (!stripePublishableKey) {
   console.error('Missing REACT_APP_STRIPE_PUBLISHABLE_KEY in frontend/.env');
 }
 const stripePromise = loadStripe(stripePublishableKey);
-const API = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API = process.env.REACT_APP_API_URL || 'http://akagerainc.onrender/api';
+
+const currencyRates = {
+  USD: 1,
+  RWF: 1462,
+  EUR: 0.92,
+  GBP: 0.80,
+  KES: 153,
+  UGX: 3700,
+  ZAR: 17.5,
+  CAD: 1.36,
+  AUD: 1.53
+};
 
 function PaymentForm({ user, service, showToast }) {
   const stripe = useStripe();
@@ -27,6 +39,7 @@ function PaymentForm({ user, service, showToast }) {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [paymentMessage, setPaymentMessage] = useState(null);
   const [momoPhoneNumber, setMomoPhoneNumber] = useState('');
+  const [currencyCode, setCurrencyCode] = useState('RWF');
 
   // 1. Create PaymentIntent only for card payments
   useEffect(() => {
@@ -204,30 +217,34 @@ function PaymentForm({ user, service, showToast }) {
 
   if (paymentSuccess) {
     return (
-      <div className="payment-success" data-aos="zoom-in">
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <CheckCircle size={80} style={{ color: 'var(--success)', marginBottom: '20px' }} />
-          <h1 style={{ color: 'var(--primary-blue)', marginBottom: '10px' }}>
-            Payment Completed
-          </h1>
-          {paymentMessage && (
-            <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem', marginBottom: '16px' }}>
-              {paymentMessage}
-            </p>
-          )}
-          {licenseKey ? (
-            <>
-              <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem' }}>
-                Your license key (valid for 1 month):
-              </p>
-              <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--primary-blue)', margin: '20px 0' }}>{licenseKey}</div>
-              <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>Please save this license key securely. It will expire in 1 month.</p>
-            </>
-          ) : (
-            <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>
-              Your mobile money payment request has been created. We will confirm the payment and send your license when the charge is complete.
-            </p>
-          )}
+      <div className="payment-container" style={{ backgroundImage: "url('/payment.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+        <div className="container">
+          <div style={{ maxWidth: '650px', margin: '0 auto', background: 'rgba(255, 255, 255, 0.95)', padding: '40px', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }} data-aos="zoom-in">
+            <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+              <CheckCircle size={80} style={{ color: 'var(--success)', marginBottom: '20px' }} />
+              <h1 style={{ color: 'var(--primary-blue)', marginBottom: '10px' }}>
+                Payment Completed
+              </h1>
+              {paymentMessage && (
+                <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem', marginBottom: '16px' }}>
+                  {paymentMessage}
+                </p>
+              )}
+              {licenseKey ? (
+                <>
+                  <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem' }}>
+                    Your license key (valid for 1 month):
+                  </p>
+                  <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--primary-blue)', margin: '20px 0' }}>{licenseKey}</div>
+                  <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>Please save this license key securely. It will expire in 1 month.</p>
+                </>
+              ) : (
+                <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>
+                  Your mobile money payment request has been created. We will confirm the payment and send your license when the charge is complete.
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -242,6 +259,40 @@ function PaymentForm({ user, service, showToast }) {
       <div className="form-group">
         <label>Email Address</label>
         <input type="email" value={user.email} disabled />
+      </div>
+      <div className="form-group" style={{ background: '#f4f7ff', padding: '16px', borderRadius: '8px', border: '1px solid #d6d0ff', marginBottom: '24px' }}>
+        <label>See local currency equivalent</label>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <input
+            type="text"
+            value={currencyCode}
+            onChange={(e) => setCurrencyCode(e.target.value.toUpperCase())}
+            placeholder="Currency code e.g. RWF"
+            style={{ width: '160px', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ccc' }}
+          />
+          <div style={{ color: 'var(--dark-gray)', minWidth: '220px' }}>
+            {(() => {
+              const code = currencyCode.trim().toUpperCase();
+              const rate = currencyRates[code];
+              if (!code) {
+                return <span>Enter a currency code like RWF.</span>;
+              }
+              if (!rate) {
+                return <span style={{ color: '#d9534f' }}>Unsupported currency code. Try RWF.</span>;
+              }
+              const converted = parseFloat(service.price) * rate;
+              const formatted = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(converted);
+              return (
+                <span style={{ fontWeight: 700 }}>
+                  ${parseFloat(service.price).toFixed(2)} USD ≈ {formatted} {code}
+                </span>
+              );
+            })()}
+          </div>
+        </div>
+        <p style={{ marginTop: 10, color: 'var(--dark-gray)', fontSize: '0.9rem' }}>
+          Supported codes: {Object.keys(currencyRates).join(', ')}. RWF rate uses the current app conversion value.
+        </p>
       </div>
       <div className="form-group">
         <label>Payment Method</label>
@@ -332,9 +383,9 @@ function Payment({ user, showToast }) {
 
   if (!user) {
     return (
-      <div className="payment-container" style={{ marginTop: '90px' }}>
+      <div className="payment-container" style={{ backgroundImage: "url('/payment.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
         <div className="container">
-          <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center' }} data-aos="zoom-in">
+          <div style={{ maxWidth: '500px', margin: '0 auto', textAlign: 'center', background: 'rgba(255, 255, 255, 0.95)', borderRadius: '12px', padding: '40px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }} data-aos="zoom-in">
             <h1 style={{ color: 'var(--primary-blue)' }}>Please Login</h1>
             <p style={{ marginBottom: '20px' }}>You need to be logged in to make a payment.</p>
             <button onClick={() => navigate('/login')} className="btn btn-primary">
@@ -351,16 +402,17 @@ function Payment({ user, showToast }) {
   }
 
   return (
-    <div className="payment-container" style={{ marginTop: '90px' }}>
+    <div className="payment-container" style={{ backgroundImage: "url('/payment.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       <div className="container">
         <div style={{ maxWidth: '650px', margin: '0 auto' }} data-aos="zoom-in">
           {/* How to Pay Section */}
           <div style={{
-            background: 'var(--light-gray)',
+            background: 'rgba(255, 255, 255, 0.95)',
             borderRadius: '12px',
             padding: '32px',
             marginBottom: '32px',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.04)'
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(10px)'
           }}>
             <h2 style={{ color: 'var(--primary-blue)', marginBottom: 18 }}>How to Pay for Our Services</h2>
             <ol style={{ paddingLeft: 18, marginBottom: 18 }}>
@@ -385,13 +437,13 @@ function Payment({ user, showToast }) {
               </li>
             </ol>
             <div style={{ fontSize: '0.93rem', color: '#666', background: '#e3f2fd', padding: 12, borderRadius: 8 }}>
-              <strong>Need help?</strong> Contact us at <a href="mailto:info@akagerinc.com" style={{ color: '#1976d2' }}>info@akagerinc.com</a> or <a href="tel:+1234567890" style={{ color: '#1976d2' }}>+1 (234) 567-890</a>.
+              <strong>Need help?</strong> Contact us at <a href="mailto:akagerinc@gmail.com" style={{ color: '#1976d2' }}>info@akagerinc.com</a> or <a href="tel:+250795226123" style={{ color: '#1976d2' }}>+250 795 226 123</a>.
             </div>
           </div>
 
           {/* Payment Form Section */}
-          <div className="payment-card">
-            <div style={{ marginBottom: '25px', padding: '20px', background: 'var(--light-gray)', borderRadius: '8px' }}>
+          <div className="payment-card" style={{ background: 'rgba(255, 255, 255, 0.95)', borderRadius: '12px', padding: '40px', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)', backdropFilter: 'blur(10px)' }}>
+            <div style={{ marginBottom: '25px', padding: '20px', background: 'rgba(245, 245, 245, 0.7)', borderRadius: '8px' }}>
               <h3 style={{ color: 'var(--primary-blue)', marginBottom: '10px' }}>{service.name}</h3>
               <p style={{ color: 'var(--dark-gray)', marginBottom: '15px' }}>{service.description}</p>
               <p style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--primary-blue)' }}>

@@ -42,8 +42,9 @@ function Dashboard({ user }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', paddingTop: '120px', paddingBottom: '40px', background: 'var(--light-gray)' }}>
-      <div className="container">
+    <div style={{ minHeight: '100vh', paddingTop: '120px', paddingBottom: '40px', backgroundImage: "url('/dashboard-bg.jpg')", backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', position: 'relative', backgroundColor: 'var(--light-gray)' }}>
+      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255, 255, 255, 0.44)', zIndex: 1 }} />
+      <div className="container" style={{ position: 'relative', zIndex: 2 }}>
         {/* Header */}
         <div style={{
           display: 'flex',
