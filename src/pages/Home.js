@@ -112,6 +112,14 @@ function Home({ onLogin, user }) {
     return icons[serviceId] || <Smartphone size={40} />;
   };
 
+  const buildServiceImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:8000';
+    const normalized = imageUrl.replace(/^\/+/, '');
+    const imagePath = normalized.startsWith('uploads/') ? normalized : `uploads/${normalized}`;
+    return `${baseUrl}/${imagePath}`;
+  };
+
   // Stats data
   const stats = [
     { icon: <Users size={32} />, value: '10K+', label: 'Active Users' },
@@ -414,26 +422,37 @@ function Home({ onLogin, user }) {
           </div>
 
           <div className="services-grid">
-            {services.map((service, index) => (
-              <div 
-                key={service.id}
-                className="service-card"
-                data-aos="fade-up"
-                data-aos-delay={index * 100}
-              >
-                <div className="service-card-icon">
-                  {getServiceIcon(service.id)}
+            {services.map((service, index) => {
+              const serviceImageUrl = buildServiceImageUrl(service.image_url);
+              return (
+                <div 
+                  key={service.id}
+                  className="service-card"
+                  data-aos="fade-up"
+                  data-aos-delay={index * 100}
+                >
+                  {serviceImageUrl ? (
+                    <img
+                      src={serviceImageUrl}
+                      alt={service.name}
+                      className="service-card-img"
+                    />
+                  ) : (
+                    <div className="service-card-icon">
+                      {getServiceIcon(service.id)}
+                    </div>
+                  )}
+                  <h3>{service.name}</h3>
+                  <p>{service.description}</p>
+                  <p style={{ fontSize: '1.5rem', color: '#000', fontWeight: 'bold' }}>
+                    ${parseFloat(service.price).toFixed(2)}
+                  </p>
+                  <Link to="/services" className="btn btn-secondary">
+                    Learn More
+                  </Link>
                 </div>
-                <h3>{service.name}</h3>
-                <p>{service.description}</p>
-                <p style={{ fontSize: '1.5rem', color: '#000', fontWeight: 'bold' }}>
-                  ${parseFloat(service.price).toFixed(2)}
-                </p>
-                <Link to="/services" className="btn btn-secondary">
-                  Learn More
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

@@ -35,6 +35,14 @@ function Services({ showToast }) {
     return icons[serviceId] || <Smartphone size={60} />;
   };
 
+  const buildServiceImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:8000';
+    const normalized = imageUrl.replace(/^\/+/, '');
+    const imagePath = normalized.startsWith('uploads/') ? normalized : `uploads/${normalized}`;
+    return `${baseUrl}/${imagePath}`;
+  };
+
   const handleSelectService = (service) => {
     const user = localStorage.getItem('user');
     if (!user) {
@@ -102,9 +110,18 @@ function Services({ showToast }) {
                   border: '2px solid transparent'
                 }}
               >
-                <div className="service-card-icon" style={{ marginBottom: '25px' }}>
-                  {getServiceIcon(service.id)}
-                </div>
+                {buildServiceImageUrl(service.image_url) ? (
+                  <img
+                    src={buildServiceImageUrl(service.image_url)}
+                    alt={service.name}
+                    className="service-card-img"
+                    style={{ marginBottom: '25px' }}
+                  />
+                ) : (
+                  <div className="service-card-icon" style={{ marginBottom: '25px' }}>
+                    {getServiceIcon(service.id)}
+                  </div>
+                )}
 
                 <h3 style={{ color: 'var(--primary-blue)', marginBottom: '15px', fontSize: '1.5rem' }}>
                   {service.name}

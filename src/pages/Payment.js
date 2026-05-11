@@ -26,6 +26,7 @@ function PaymentForm({ user, service, showToast }) {
   const [paymentIntentId, setPaymentIntentId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [paymentMessage, setPaymentMessage] = useState(null);
+  const [momoPhoneNumber, setMomoPhoneNumber] = useState('');
 
   // 1. Create PaymentIntent only for card payments
   useEffect(() => {
@@ -59,13 +60,20 @@ function PaymentForm({ user, service, showToast }) {
     setError(null);
     setPaymentMessage(null);
 
+    if (!momoPhoneNumber.trim()) {
+      setError('Please enter your mobile number for MoMo payment.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await axios.post(
         `${API}/payments/create-momo-charge`,
         {
           amount: Number(service.price),
           service_id: service.id,
-          currency: 'usd'
+          currency: 'usd',
+          phone_number: momoPhoneNumber.trim()
         },
         { params: { user_id: user.id } }
       );
@@ -79,7 +87,6 @@ function PaymentForm({ user, service, showToast }) {
       showToast(message, 'error');
     } finally {
       setLoading(false);
-      setMomoProcessing(false);
     }
   };
 
@@ -280,11 +287,16 @@ function PaymentForm({ user, service, showToast }) {
       )}
       {paymentMethod === 'momo' && (
         <div className="form-group" style={{ background: '#f7f6ff', padding: 14, borderRadius: 8, border: '1px solid #d6d0ff' }}>
-          <p style={{ margin: 0, color: 'var(--dark-gray)', lineHeight: 1.6 }}>
-            Your service amount will be converted from USD to RWF and charged through MoMo to the receiver number <strong>0795226123</strong>.
-          </p>
-          <p style={{ marginTop: 10, color: 'var(--dark-gray)' }}>
-            After creating the payment request, we will confirm it and you will receive your license once the payment is completed.
+          <label>Mobile Money Number</label>
+          <input
+            type="tel"
+            value={momoPhoneNumber}
+            onChange={(e) => setMomoPhoneNumber(e.target.value)}
+            placeholder="Enter your phone number"
+            style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }}
+          />
+          <p style={{ marginTop: 10, color: 'var(--dark-gray)', lineHeight: 1.6 }}>
+            Enter the number that will be charged via MoMo. We will request payment against this number.
           </p>
         </div>
       )}
@@ -363,11 +375,11 @@ function Payment({ user, showToast }) {
                 </ul>
               </li>
               <li>
-                <strong>Option 2: Pay with MoMo Virtual Card (Mobile Money)</strong>
+                <strong>Option 2: Pay with Mobile Money (MoMo)</strong>
                 <ul style={{ marginTop: 8, fontSize: '0.98rem', color: 'var(--dark-gray)' }}>
-                  <li>• We will convert your service amount from USD to RWF and create a MoMo charge request to <strong>0795226123</strong>.</li>
-                  <li>• Your mobile money payment will be processed through the backend using the configured API key.</li>
-                  <li>• Once the payment is confirmed, your license key will be issued.</li>
+                  <li>• Enter the phone number that should be charged via MoMo.</li>
+                  <li>• We will use that number to create the MoMo charge request through the backend.</li>
+                  <li>• Once the payment is confirmed, your service license key will be issued.</li>
                   <li>• Please follow the instructions shown after submitting the payment request.</li>
                 </ul>
               </li>

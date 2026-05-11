@@ -383,19 +383,14 @@ nav {
   font-size: 2rem;
 }
 
-.service-card h3 {
-  color: var(--primary-blue);
-  margin-bottom: 15px;
-}
+  .service-card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
 
-.service-card p {
-  color: var(--dark-gray);
-  margin-bottom: 20px;
-  font-size: 0.95rem;
-}
-
-/* ============================= */
-/*      APPS SECTION           */
 /* ============================= */
 
 .apps {
@@ -746,6 +741,10 @@ footer {
     height: 500px;
   }
   
+  .hero-overlay {
+    padding-top: 90px;
+  }
+  
   .hero-text h1 {
     font-size: 2rem;
   }
@@ -783,6 +782,10 @@ footer {
   
   .hero {
     height: 400px;
+  }
+  
+  .hero-overlay {
+    padding-top: 70px;
   }
   
   .hero-text h1 {
