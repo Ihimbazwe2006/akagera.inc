@@ -57,6 +57,8 @@ export const serviceAPI = {
 export const paymentAPI = {
   createIntent: (userId, intentData) => 
     api.post(`/payments/create-intent?user_id=${userId}`, intentData),
+  createMomoPayment: (userId, intentData) =>
+    api.post(`/payments/create-momo-charge?user_id=${userId}`, intentData),
   getUserPayments: (userId) => api.get(`/payments/user/${userId}`),
   handleWebhook: (webhookData) => api.post('/payments/webhook', webhookData),
 };

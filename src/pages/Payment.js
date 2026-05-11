@@ -24,8 +24,10 @@ function PaymentForm({ user, service, showToast }) {
   const [licenseKey, setLicenseKey] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [paymentIntentId, setPaymentIntentId] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMessage, setPaymentMessage] = useState(null);
 
-  // 1. Create PaymentIntent ONCE when page loads
+  // 1. Create PaymentIntent only for card payments
   useEffect(() => {
     const createIntent = async () => {
       try {
@@ -47,16 +49,50 @@ function PaymentForm({ user, service, showToast }) {
       }
     };
 
-    if (user && service) {
+    if (user && service && paymentMethod === 'card') {
       createIntent();
     }
-  }, [user, service]);
+  }, [user, service, paymentMethod]);
+
+  const handleMoMoPayment = async () => {
+    setLoading(true);
+    setError(null);
+    setPaymentMessage(null);
+
+    try {
+      const res = await axios.post(
+        `${API}/payments/create-momo-charge`,
+        {
+          amount: Number(service.price),
+          service_id: service.id,
+          currency: 'usd'
+        },
+        { params: { user_id: user.id } }
+      );
+
+      setPaymentSuccess(true);
+      setPaymentMessage(res.data.message);
+      showToast(res.data.message || 'MoMo payment request created.', 'success');
+    } catch (err) {
+      const message = err?.response?.data?.detail || err.message || 'Mobile money payment failed';
+      setError(message);
+      showToast(message, 'error');
+    } finally {
+      setLoading(false);
+      setMomoProcessing(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setCardError(null);
+
+    if (paymentMethod === 'momo') {
+      await handleMoMoPayment();
+      return;
+    }
 
     if (!stripe || !elements) {
       setError('Stripe is not ready yet. Please wait a moment and try again.');
@@ -119,6 +155,7 @@ function PaymentForm({ user, service, showToast }) {
           showToast("Payment succeeded but license generation failed. Contact support.", "warning");
         }
         setPaymentSuccess(true);
+        setPaymentMessage('Payment successful! License generated.');
         showToast('Payment successful! License generated.', 'success');
       } else if (paymentIntent.status === 'requires_action') {
         // Handle 3D Secure or other actions
@@ -140,6 +177,7 @@ function PaymentForm({ user, service, showToast }) {
             showToast("Payment succeeded but license generation failed. Contact support.", "warning");
           }
           setPaymentSuccess(true);
+          setPaymentMessage('Payment successful! License generated.');
           showToast('Payment successful! License generated.', 'success');
         } else {
           setError('Payment authentication failed.');
@@ -163,13 +201,26 @@ function PaymentForm({ user, service, showToast }) {
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <CheckCircle size={80} style={{ color: 'var(--success)', marginBottom: '20px' }} />
           <h1 style={{ color: 'var(--primary-blue)', marginBottom: '10px' }}>
-            Payment Successful!
+            Payment Completed
           </h1>
-          <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem' }}>
-            Your license key (valid for 1 month):
-          </p>
-          <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--primary-blue)', margin: '20px 0' }}>{licenseKey}</div>
-          <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>Please save this license key securely. It will expire in 1 month.</p>
+          {paymentMessage && (
+            <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem', marginBottom: '16px' }}>
+              {paymentMessage}
+            </p>
+          )}
+          {licenseKey ? (
+            <>
+              <p style={{ color: 'var(--dark-gray)', fontSize: '1.1rem' }}>
+                Your license key (valid for 1 month):
+              </p>
+              <div style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--primary-blue)', margin: '20px 0' }}>{licenseKey}</div>
+              <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>Please save this license key securely. It will expire in 1 month.</p>
+            </>
+          ) : (
+            <p style={{ color: 'var(--dark-gray)', fontSize: '1rem' }}>
+              Your mobile money payment request has been created. We will confirm the payment and send your license when the charge is complete.
+            </p>
+          )}
         </div>
       </div>
     );
@@ -186,20 +237,64 @@ function PaymentForm({ user, service, showToast }) {
         <input type="email" value={user.email} disabled />
       </div>
       <div className="form-group">
-        <label>Card Details</label>
-        <div style={{ padding: 12, border: '1px solid #ccc', borderRadius: 8, background: '#fff' }}>
-          <CardElement
-            options={{ style: { base: { fontSize: '18px' } } }}
-            onChange={(event) => {
-              setCardError(event.error ? event.error.message : null);
-              setError(event.error ? event.error.message : null);
-              setCardComplete(event.complete);
-            }}
-          />
+        <label>Payment Method</label>
+        <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+          <label style={{ cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="card"
+              checked={paymentMethod === 'card'}
+              onChange={() => setPaymentMethod('card')}
+              style={{ marginRight: 8 }}
+            />
+            Pay with Card
+          </label>
+          <label style={{ cursor: 'pointer' }}>
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="momo"
+              checked={paymentMethod === 'momo'}
+              onChange={() => setPaymentMethod('momo')}
+              style={{ marginRight: 8 }}
+            />
+            Pay with Mobile Money (MoMo)
+          </label>
         </div>
       </div>
-      <button type="submit" className="btn btn-primary btn-large" disabled={loading || !stripe || !clientSecret} style={{ width: '100%' }}>
-        {loading ? 'Processing...' : `Pay $${parseFloat(service.price).toFixed(2)}`}
+      {paymentMethod === 'card' && (
+        <div className="form-group">
+          <label>Card Details</label>
+          <div style={{ padding: 12, border: '1px solid #ccc', borderRadius: 8, background: '#fff' }}>
+            <CardElement
+              options={{ style: { base: { fontSize: '18px' } } }}
+              onChange={(event) => {
+                setCardError(event.error ? event.error.message : null);
+                setError(event.error ? event.error.message : null);
+                setCardComplete(event.complete);
+              }}
+            />
+          </div>
+        </div>
+      )}
+      {paymentMethod === 'momo' && (
+        <div className="form-group" style={{ background: '#f7f6ff', padding: 14, borderRadius: 8, border: '1px solid #d6d0ff' }}>
+          <p style={{ margin: 0, color: 'var(--dark-gray)', lineHeight: 1.6 }}>
+            Your service amount will be converted from USD to RWF and charged through MoMo to the receiver number <strong>0795226123</strong>.
+          </p>
+          <p style={{ marginTop: 10, color: 'var(--dark-gray)' }}>
+            After creating the payment request, we will confirm it and you will receive your license once the payment is completed.
+          </p>
+        </div>
+      )}
+      <button
+        type="submit"
+        className="btn btn-primary btn-large"
+        disabled={loading || (paymentMethod === 'card' && (!stripe || !clientSecret))}
+        style={{ width: '100%' }}
+      >
+        {loading ? 'Processing...' : paymentMethod === 'card' ? `Pay $${parseFloat(service.price).toFixed(2)}` : `Pay with MoMo (${parseFloat(service.price).toFixed(2)} USD)`}
       </button>
       {(error || cardError) && <div style={{ color: '#ff6b6b', marginTop: 16, fontWeight: 600 }}>{error || cardError}</div>}
       <div style={{ marginTop: 20, fontSize: '0.95rem', color: 'var(--dark-gray)', background: '#e3f2fd', padding: 12, borderRadius: 8 }}>
@@ -270,11 +365,10 @@ function Payment({ user, showToast }) {
               <li>
                 <strong>Option 2: Pay with MoMo Virtual Card (Mobile Money)</strong>
                 <ul style={{ marginTop: 8, fontSize: '0.98rem', color: 'var(--dark-gray)' }}>
-                  <li>• Open your Mobile Money app and select "Virtual Card" or "MoMo Card" option.</li>
-                  <li>• Generate a virtual card and use its details in the card payment form.</li>
-                  <li>• Complete the payment as you would with a normal card.</li>
-                  <li>• You will receive a license key after payment, just like with a regular card.</li>
-                  <li>• <span style={{ color: '#1976d2' }}>MoMo virtual cards are safe and accepted for online payments. Make sure your card is enabled for online use.</span></li>
+                  <li>• We will convert your service amount from USD to RWF and create a MoMo charge request to <strong>0795226123</strong>.</li>
+                  <li>• Your mobile money payment will be processed through the backend using the configured API key.</li>
+                  <li>• Once the payment is confirmed, your license key will be issued.</li>
+                  <li>• Please follow the instructions shown after submitting the payment request.</li>
                 </ul>
               </li>
             </ol>
