@@ -118,8 +118,8 @@ function Home({ onLogin, user }) {
       return imageUrl;
     }
 
-    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || window.location.origin;
-    let normalized = imageUrl.replace(/^\/+/, '');
+    const baseUrl = process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:8000';
+    let normalized = imageUrl.replace(/\\/g, '/').replace(/^\/+/, '');
 
     if (!normalized.startsWith('uploads/')) {
       if (normalized.startsWith('services/')) {
