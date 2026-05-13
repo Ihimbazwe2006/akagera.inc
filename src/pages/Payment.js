@@ -7,8 +7,8 @@ const API = process.env.REACT_APP_API_URL || 'http://akagerainc.onrender.com/api
 
 const currencyRates = {
   USD: 1,
-  RWF: 1330,
-  EUR: 0.92,
+  RWF: 1460,
+  EUR: 0.85,
   GBP: 0.79,
   KES: 153,
   UGX: 3750,
@@ -19,16 +19,12 @@ const currencyRates = {
 
 const methodDetails = {
   paypal: {
-    title: 'Pay with PayPal',
-    description: 'Pay securely via PayPal. This is the only live payment method right now.',
-  },
-  card: {
-    title: 'Credit / Debit Card',
-    description: 'Card payment is planned but not available yet. Use PayPal for now.',
+    title: 'Card payment with PayPal',
+    description: 'Pay securely via PayPal using cards Visa, Mastercard, and American Express.',
   },
   momo: {
     title: 'Mobile Money (MoMo)',
-    description: 'MoMo payment support is coming soon. Please complete payment with PayPal.',
+    description: 'Pay with MTN, Airtel, or other mobile money wallets.',
   },
 };
 
@@ -47,10 +43,8 @@ function Payment({ user, showToast }) {
   const [error, setError] = useState(null);
   const [paypalOrderId, setPaypalOrderId] = useState(null);
   const [paymentStep, setPaymentStep] = useState('method-selection');
-  const [selectedMethod, setSelectedMethod] = useState('card');
+  const [selectedMethod, setSelectedMethod] = useState('paypal');
   const [momoPhoneNumber, setMomoPhoneNumber] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [unsupportedPaymentMethod, setUnsupportedPaymentMethod] = useState(null);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
   useEffect(() => {
@@ -66,16 +60,12 @@ function Payment({ user, showToast }) {
   const getErrorMessage = (err) => {
     if (err?.response?.data?.detail) {
       const detail = err.response.data.detail;
-      // Check if detail is an array (validation errors)
       if (Array.isArray(detail) && detail.length > 0) {
-        // Format validation errors into a readable string
         return detail.map(d => d.msg || d.message || JSON.stringify(d)).join(', ');
       }
-      // If detail is a string, return it
       if (typeof detail === 'string') {
         return detail;
       }
-      // If detail is an object, stringify it safely
       if (typeof detail === 'object') {
         return detail.msg || detail.message || 'An error occurred';
       }
@@ -124,97 +114,116 @@ function Payment({ user, showToast }) {
     }
   };
 
-   const handleCardPayment = async () => {
-  if (!user || !service) {
-    showToast('Please login and select a service first.', 'error');
-    return;
-  }
-  setError(null);
-  setLoading(true);
-  try {
-    const response = await axios.post(
-      `${API}/payments/initiate-card`,
-      {
-        amount: Number(service.price),
-        service_id: service.id,
-        currency: 'USD',
-        user_id: user.id,
-        email: user.email  // Add user's email
-      }
-    );
-    const { success, payment_url, payment_id } = response.data;
-    if (success && payment_url) {
-      setPaymentStep('card-flow');
-      showToast('Redirecting to card payment...', 'success');
-      setTimeout(() => {
-        window.location.href = payment_url;
-      }, 1100);
-    } else {
-      throw new Error(response.data.error || 'Failed to initiate card payment.');
+  const handleMoMoPayment = async () => {
+    if (!user || !service) {
+      showToast('Please login and select a service first.', 'error');
+      return;
     }
-  } catch (err) {
-    const message = getErrorMessage(err);
-    setError(message);
-    showToast(message, 'error');
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleMoMoPayment = async () => {
-  if (!user || !service) {
-    showToast('Please login and select a service first.', 'error');
-    return;
-  }
-  if (!momoPhoneNumber) {
-    setError('Please enter your mobile number for MoMo payment.');
-    showToast('Please enter your mobile number.', 'error');
-    return;
-  }
-  setError(null);
-  setLoading(true);
-  try {
-    const response = await axios.post(
-      `${API}/payments/initiate-momo`,
-      {
+    if (!momoPhoneNumber) {
+      setError('Please enter your mobile number for MoMo payment.');
+      showToast('Please enter your mobile number.', 'error');
+      return;
+    }
+    
+    const phoneRegex = /^07[2-9][0-9]{7}$/;
+    if (!phoneRegex.test(momoPhoneNumber)) {
+      setError('Please enter a valid Rwandan phone number (e.g., 078XXXXXXX)');
+      showToast('Invalid phone number format', 'error');
+      return;
+    }
+    
+    setError(null);
+    setLoading(true);
+    
+    try {
+      const requestData = {
         amount: Number(service.price),
         service_id: service.id,
         currency: 'USD',
         user_id: user.id,
         phone_number: momoPhoneNumber
+      };
+      
+      const response = await axios.post(
+        `${API}/payments/initiate-momo`,
+        requestData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
+      
+      const { success, momo_reference, error } = response.data;
+      
+      if (success && momo_reference) {
+        setPaymentStep('momo-flow');
+        showToast('MoMo payment initiated. Please approve on your phone.', 'success');
+      } else {
+        let userFriendlyError = '';
+        
+        if (error) {
+          if (error.toLowerCase().includes('balance') || 
+              error.toLowerCase().includes('insufficient') ||
+              error.toLowerCase().includes('failed check users balance')) {
+            userFriendlyError = '❌ Insufficient Balance: Your mobile money account does not have enough funds to complete this payment. Please check your balance and try again.';
+            showToast('Insufficient balance. Please add funds to your mobile money account.', 'error');
+          } 
+          else if (error.toLowerCase().includes('invalid') && error.toLowerCase().includes('phone')) {
+            userFriendlyError = '❌ Invalid Phone Number: Please enter a valid mobile money number.';
+            showToast('Invalid phone number. Please check and try again.', 'error');
+          }
+          else if (error.toLowerCase().includes('network')) {
+            userFriendlyError = '❌ Network Error: Unable to process payment. Please check your connection and try again.';
+            showToast('Network error. Please try again.', 'error');
+          }
+          else {
+            userFriendlyError = `❌ Payment Failed: ${error}`;
+            showToast(error, 'error');
+          }
+        } else {
+          userFriendlyError = '❌ Payment Failed: Unable to initiate payment. Please try again.';
+          showToast('Payment failed. Please try again.', 'error');
+        }
+        
+        setError(userFriendlyError);
       }
-    );
-    const { success, momo_reference } = response.data;
-    if (success && momo_reference) {
-      setPaymentStep('momo-flow');
-      showToast('MoMo payment initiated. Please approve on your phone.', 'success');
-    } else {
-      throw new Error(response.data.error || 'Failed to initiate MoMo payment.');
+    } catch (err) {
+      console.error('MoMo payment error:', err);
+      
+      let errorMessage = '';
+      
+      if (err.response?.data?.error) {
+        const apiError = err.response.data.error;
+        if (apiError.toLowerCase().includes('balance') || apiError.toLowerCase().includes('insufficient')) {
+          errorMessage = '❌ Insufficient Balance: Your mobile money account does not have enough funds. Please add funds and try again.';
+        } else {
+          errorMessage = `❌ Payment Failed: ${apiError}`;
+        }
+      } 
+      else if (err.response?.data?.detail) {
+        errorMessage = `❌ Error: ${err.response.data.detail}`;
+      }
+      else if (err.message === 'Network Error') {
+        errorMessage = '❌ Network Error: Please check your internet connection and try again.';
+      }
+      else {
+        errorMessage = '❌ Payment Failed: An unexpected error occurred. Please try again later.';
+      }
+      
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    const message = getErrorMessage(err);
-    setError(message);
-    showToast(message, 'error');
-  } finally {
-    setLoading(false);
-  }
-};
-
-  const handleUnsupportedPayment = (method) => {
-    setUnsupportedPaymentMethod(method);
-    setShowModal(true);
-    showToast(`${method} is currently unavailable.`, 'info');
   };
 
   const handleProceed = () => {
     if (selectedMethod === 'paypal') {
       handlePayPalClick();
-    } else if (selectedMethod === 'card') {
-      handleCardPayment();
     } else if (selectedMethod === 'momo') {
       handleMoMoPayment();
-    } else {
-      handleUnsupportedPayment(selectedMethod);
     }
   };
 
@@ -228,7 +237,7 @@ const handleMoMoPayment = async () => {
         </div>
         <div className="payment-content">
           <div className="payment-card">
-            <p>Login to continue and choose PayPal for a secure, trusted checkout.</p>
+            <p>Login to continue and choose PayPal or Mobile Money for a secure, trusted checkout.</p>
             <button className="payment-button" onClick={() => navigate('/')}>
               Go to Login
             </button>
@@ -251,12 +260,29 @@ const handleMoMoPayment = async () => {
     <div className="payment-container">
       <div className="payment-header">
         <h1>Complete Your Payment</h1>
-        <p>Choose your preferred payment method below. Card, MoMo, and PayPal are supported.</p>
+        <p>Choose your preferred payment method below. Mobile Money and PayPal are supported.</p>
       </div>
 
       {error && (
-        <div className="alert alert-error">
-          <span>{error}</span>
+        <div className={`alert alert-error ${error.includes('Insufficient Balance') ? 'alert-insufficient-funds' : ''}`}>
+          <div className="alert-content">
+            <span className="alert-icon">⚠️</span>
+            <div className="alert-message">
+              <strong>{error.includes('Insufficient Balance') ? 'Payment Failed!' : 'Error!'}</strong>
+              <p>{error}</p>
+            </div>
+          </div>
+          {error.includes('Insufficient Balance') && (
+            <div className="alert-suggestions">
+              <p><strong>Suggestions:</strong></p>
+              <ul>
+                <li>💵 Check your mobile money balance</li>
+                <li>💰 Add funds to your mobile money account</li>
+                <li>🔄 Try a smaller amount</li>
+                <li>💳 Use PayPal instead</li>
+              </ul>
+            </div>
+          )}
           <button onClick={() => setError(null)} className="close-btn">×</button>
         </div>
       )}
@@ -312,19 +338,6 @@ const handleMoMoPayment = async () => {
             
             <div className="payment-methods-list">
               <div
-                className={`payment-option payment-option--card ${selectedMethod === 'card' ? 'active' : ''}`}
-                onClick={() => setSelectedMethod('card')}
-              >
-                <div className="method-radio">
-                  {selectedMethod === 'card' && <div className="method-radio-dot"></div>}
-                </div>
-                <div className="method-option-info">
-                  <h4>Credit/Debit Card</h4>
-                  <p>Pay with Visa, MasterCard, or other cards. Secure and instant.</p>
-                </div>
-              </div>
-
-              <div
                 className={`payment-option payment-option--momo ${selectedMethod === 'momo' ? 'active' : ''}`}
                 onClick={() => setSelectedMethod('momo')}
               >
@@ -345,8 +358,8 @@ const handleMoMoPayment = async () => {
                   {selectedMethod === 'paypal' && <div className="method-radio-dot"></div>}
                 </div>
                 <div className="method-option-info">
-                  <h4>Pay with PayPal</h4>
-                  <p>Pay securely via PayPal. International cards and balances supported.</p>
+                  <h4>Card payment with PayPal</h4>
+                  <p>Pay securely via PayPal. use cards visa, mastercard, and american express. International cards and balances supported.</p>
                 </div>
               </div>
             </div>
@@ -366,7 +379,7 @@ const handleMoMoPayment = async () => {
             )}
 
             <p className="trusted-note">
-              Trusted payment: only the selected amount will be charged to your card or PayPal account.
+              Trusted payment: only the selected amount will be charged to your phone or PayPal account. Your personal information is private and never saved.
             </p>
 
             <button
@@ -379,63 +392,12 @@ const handleMoMoPayment = async () => {
                 ? loading
                   ? 'Creating PayPal order...'
                   : 'Pay with PayPal'
-                : selectedMethod === 'card'
-                ? loading
-                  ? 'Redirecting to Card payment...'
-                  : 'Pay with Card'
                 : selectedMethod === 'momo'
                 ? loading
                   ? 'Initiating MoMo payment...'
                   : 'Pay with MoMo'
                 : 'Pay'}
             </button>
-          </div>
-
-          <div className="payment-card support-card">
-            <div className="section-title">Need help?</div>
-            <p>Watch the PayPal tutorial if this is your first time paying online.</p>
-            <a
-              href="https://www.youtube.com/results?search_query=how+to+use+paypal+for+payment"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="support-link"
-            >
-              Watch PayPal tutorial
-            </a>
-          </div>
-        </div>
-      )}
-
-      {paymentStep === 'card-flow' && (
-        <div className="payment-content">
-          <div className="card-flow">
-            <div className="flow-header">
-              <h2>Card Payment</h2>
-              <p>Redirecting to secure card payment page. Complete your payment there.</p>
-            </div>
-            <div className="flow-step-row">
-              <div className="flow-step completed">
-                <span>1</span>
-                <div>
-                  <h4>Order created</h4>
-                  <p>Your order is ready for card payment.</p>
-                </div>
-              </div>
-              <div className="flow-step active">
-                <span>2</span>
-                <div>
-                  <h4>Redirecting</h4>
-                  <p>Redirecting to card payment. Please complete the payment there.</p>
-                </div>
-              </div>
-              <div className="flow-step">
-                <span>3</span>
-                <div>
-                  <h4>Return</h4>
-                  <p>Return to this page once payment is confirmed.</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -508,38 +470,6 @@ const handleMoMoPayment = async () => {
               <p>
                 Order ID: <strong>{paypalOrderId}</strong>
               </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowModal(false)}>
-              ×
-            </button>
-            <div className="modal-header">
-              <h2>Payment Unavailable</h2>
-            </div>
-            <div className="modal-body">
-              <p>
-                <strong>{unsupportedPaymentMethod}</strong> is not available yet. Please use PayPal for now.
-              </p>
-              <p className="modal-info">
-                Only PayPal is fully supported. Our team is working to add card and MoMo payments.
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={() => setShowModal(false)}>
-                Close
-              </button>
-              <button className="btn-primary" onClick={() => {
-                setShowModal(false);
-                setSelectedMethod('paypal');
-              }}>
-                Switch to PayPal
-              </button>
             </div>
           </div>
         </div>

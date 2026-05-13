@@ -1,4 +1,4 @@
-/* Payment Page Styles - Simple and on-brand */
+/* Payment Page Styles - Simple and on-brand with Parallax Effect */
 
 :root {
   --primary-blue: #0B3C5D;
@@ -15,30 +15,111 @@
   box-sizing: border-box;
 }
 
+/* Parallax Container */
 .payment-container {
   min-height: 100vh;
   padding: 50px 20px;
-  background: linear-gradient(rgba(255, 255, 255, 0.562), rgba(255, 255, 255, 0.493)),
-    url('../../public/payment.jpg') center/cover no-repeat;
+  position: relative;
+  overflow-x: hidden;
   font-family: 'Open Sans', Arial, sans-serif;
+}
+
+/* Parallax Background */
+.payment-container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75)),
+    url('../../public/payment.jpg') center/cover no-repeat;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: -2;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optional: Add a subtle overlay animation */
+.payment-container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 60, 93, 0.15);
+  z-index: -1;
+  pointer-events: none;
+  animation: subtlePulse 8s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* Content wrapper for better readability */
+.payment-header,
+.payment-content,
+.security-badge {
+  position: relative;
+  z-index: 1;
+}
+
+/* Glass morphism effect for cards */
+.payment-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(0px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.payment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
 .payment-header {
   text-align: center;
   margin-bottom: 20px;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .payment-header h1 {
   margin: 0;
   font-size: 2.4rem;
-  color: var(--secondary-black);
+  color: var(--white);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .payment-header p {
   margin: 10px auto 0;
   max-width: 720px;
-  color: var(--dark-gray);
+  color: var(--gray-border);
   font-size: 1rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .warning-banner {
@@ -46,10 +127,11 @@
   margin: 0 auto 25px;
   padding: 16px 20px;
   border-radius: 12px;
-  background: #fff6e8;
+  background: rgba(255, 246, 232, 0.95);
   border: 1px solid #f5d6a5;
   color: #7a4f03;
   font-weight: 600;
+  backdrop-filter: blur(5px);
 }
 
 .payment-content {
@@ -63,14 +145,6 @@
   display: grid;
   grid-template-columns: minmax(280px, 380px) minmax(300px, 1fr);
   gap: 24px;
-}
-
-.payment-card {
-  background: var(--white);
-  border: 1px solid var(--gray-border);
-  border-radius: 18px;
-  padding: 26px;
-  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
 }
 
 .summary-header h2,
@@ -169,6 +243,7 @@
 
 .payment-option:hover {
   border-color: #999;
+  transform: translateX(5px);
 }
 
 .payment-option.active {
@@ -307,11 +382,29 @@
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.payment-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.payment-button:hover::before {
+  left: 100%;
 }
 
 .payment-button:hover {
   background: var(--primary-blue);
   color: var(--white);
+  transform: translateY(-2px);
 }
 
 .payment-button--disabled {
@@ -340,11 +433,13 @@
   color: var(--secondary-black);
   background: var(--white);
   font-weight: 700;
+  transition: all 0.25s ease;
 }
 
 .support-link:hover {
   background: var(--primary-blue);
   color: #fff;
+  transform: translateY(-2px);
 }
 
 .paypal-flow {
@@ -378,6 +473,12 @@
   border-radius: 14px;
   background: #f8fafc;
   border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.flow-step:hover {
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .flow-step.completed {
@@ -386,6 +487,16 @@
 
 .flow-step.active {
   border-color: var(--primary-blue);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(11, 60, 93, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(11, 60, 93, 0);
+  }
 }
 
 .flow-step span {
@@ -427,16 +538,22 @@
 
 .security-badge {
   max-width: 1020px;
-  margin: 0 auto;
-  margin-top: 28px;
+  margin: 28px auto 0;
   padding: 18px 22px;
-  background: var(--white);
-  border: 1px solid var(--gray-border);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
   display: inline-flex;
   align-items: center;
   gap: 12px;
   color: var(--dark-gray);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.security-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .security-badge svg {
@@ -452,11 +569,22 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
@@ -483,10 +611,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .modal-close:hover {
   color: var(--secondary-black);
+  transform: rotate(90deg);
 }
 
 .modal-header {
@@ -545,6 +675,7 @@
 
 .btn-primary:hover {
   background: #082a42;
+  transform: translateY(-2px);
 }
 
 .btn-secondary {
@@ -555,12 +686,13 @@
 
 .btn-secondary:hover {
   background: #e5e7eb;
+  transform: translateY(-2px);
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -568,9 +700,103 @@
   }
 }
 
+/* Alert Styles */
+.alert {
+  max-width: 1020px;
+  margin: 0 auto 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  position: relative;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-error {
+  background: rgba(248, 113, 113, 0.95);
+  border-left: 4px solid #dc2626;
+  color: #7f1d1d;
+}
+
+.alert-insufficient-funds {
+  background: rgba(251, 191, 36, 0.95);
+  border-left: 4px solid #f59e0b;
+  color: #78350f;
+}
+
+.alert-content {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.alert-icon {
+  font-size: 1.25rem;
+}
+
+.alert-message {
+  flex: 1;
+}
+
+.alert-message strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.alert-message p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.alert-suggestions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.alert-suggestions ul {
+  margin: 8px 0 0 20px;
+  padding: 0;
+}
+
+.alert-suggestions li {
+  margin: 4px 0;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+
+/* Responsive Design */
 @media (max-width: 900px) {
   .payment-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .payment-card:hover {
+    transform: translateY(-3px);
   }
 }
 
@@ -657,3 +883,7 @@
   animation: spin 1s linear infinite;
 }
 
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
