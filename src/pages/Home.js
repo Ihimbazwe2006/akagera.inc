@@ -180,7 +180,7 @@ function Home({ onLogin, user }) {
           <div className="section-title" data-aos="fade-up" style={{ color: 'white' }}>
             <h2 style={{ color: 'white' }}>Cross-Platform Excellence</h2>
             <p style={{ color: 'rgba(255,255,255,0.9)' }}>
-              We develop high-performance applications for both major mobile platforms
+              We develop high-performance applications for both major mobile platforms and we develop web app services
             </p>
           </div>
 
@@ -291,9 +291,6 @@ function Home({ onLogin, user }) {
                   ))}
                 </div>
 
-                {/* Bottom Android Image */}
-                
-
                 {/* Apple Section */}
                 <div style={{ marginTop: '40px' }}>
                   <div
@@ -368,6 +365,77 @@ function Home({ onLogin, user }) {
 
                 
                 </div>
+
+                <div style={{ marginTop: '40px' }}>
+                <div
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    margin: '0 auto 25px',
+                    background: 'linear-gradient(135deg, #2563eb, #1e3a8a)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.25)'
+                  }}
+                >
+                  <img
+                    src="https://cdn-icons-png.flaticon.com/512/1006/1006771.png"
+                    alt="Website Development"
+                    style={{
+                      width: '50px',
+                      height: '50px',
+                      objectFit: 'contain'
+                    }}
+                  />
+                </div>
+
+                <h3
+                  style={{
+                    fontSize: '1.8rem',
+                    marginBottom: '15px',
+                    color: '#333'
+                  }}
+                >
+                  Website Development
+                </h3>
+
+                <p
+                  style={{
+                    color: '#666',
+                    lineHeight: '1.6',
+                    marginBottom: '20px'
+                  }}
+                >
+                  We create professional websites designed for businesses, startups, organizations, and individuals who need modern and reliable online platforms. Our development process focuses on performance, security, responsive design, and a smooth user experience across all devices. We develop business websites, e-commerce platforms, portfolio websites, management systems, educational platforms, booking systems, and fully customized web solutions tailored to client requirements. From planning and UI/UX design to development, testing, deployment, and maintenance, we provide complete website development services. Using modern technologies and industry standards, we deliver scalable and high-quality websites that help clients strengthen their digital presence and reach more customers worldwide.
+                </p>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '15px',
+                    flexWrap: 'wrap'
+                  }}
+                >
+                  {['HTML', 'CSS', 'JavaScript', 'React'].map((tech) => (
+                    <span
+                      key={tech}
+                      style={{
+                        background: '#f0f0f0',
+                        padding: '6px 16px',
+                        borderRadius: '20px',
+                        fontSize: '0.85rem',
+                        color: '#666',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
               </div>
 
            
@@ -396,39 +464,22 @@ function Home({ onLogin, user }) {
         </div>
       </section>
 
-      {/* Authentication Section - only show if not logged in */}
-      {!user && (
-        <section id="auth-section" className="section-padding" style={{ background: 'var(--light-gray)' }}>
-          <div className="container">
-            <div className="section-title" data-aos="fade-up">
-              <h2>Sign In to Your Account</h2>
-              <p>Access exclusive features and manage your apps and licenses</p>
-            </div>
-
-            <div style={{
-              maxWidth: '400px',
-              margin: '0 auto',
-              background: 'var(--white)',
-              padding: '40px',
-              borderRadius: '12px',
-              boxShadow: 'var(--box-shadow)',
-              textAlign: 'center'
-            }} data-aos="zoom-in">
-              <GoogleAuthButton onLogin={onLogin} />
-              <p style={{ marginTop: '20px', color: 'var(--dark-gray)', fontSize: '0.9rem' }}>
-                We use Google authentication to keep your account secure
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* Services Section */}
-      <section className="services section-padding">
-        <div className="container">
+      <section
+        className="services section-padding"
+        style={{
+          backgroundImage: "url('/service.jpg')",
+          backgroundAttachment: 'fixed',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          position: 'relative',
+        }}
+      >
+        <div className="container" style={{position:'relative',zIndex:2}}>
           <div className="section-title" data-aos="fade-up">
-            <h2>Our Services</h2>
-            <p>
+            <h2 style={{color:'#fff'}}>Our Services</h2>
+            <p style={{color:'#fff'}}>
               We offer a range of professional digital services, including custom app development, business automation, and technology consulting. Our team works closely with you to understand your unique needs and deliver solutions that help your business grow and succeed in a competitive digital landscape.
             </p>
           </div>
@@ -442,6 +493,7 @@ function Home({ onLogin, user }) {
                   className="service-card"
                   data-aos="fade-up"
                   data-aos-delay={index * 100}
+                  style={{background:'rgba(255,255,255,0.92)',borderRadius:16}}
                 >
                   {serviceImageUrl ? (
                     <img
@@ -467,6 +519,7 @@ function Home({ onLogin, user }) {
             })}
           </div>
         </div>
+        <div style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',background:'rgba(0,0,0,0.55)',zIndex:1}}></div>
       </section>
 
       {/* Featured Apps Section - Redesigned Cards */}
