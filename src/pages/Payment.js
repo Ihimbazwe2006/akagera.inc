@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Payment.css';
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API = process.env.REACT_APP_API_URL || 'http://akagerainc.onrender.com/api';
 
 const currencyRates = {
   USD: 1,
@@ -62,6 +62,27 @@ function Payment({ user, showToast }) {
     setService(serviceData);
   }, [location, navigate]);
 
+  // Helper function to extract error message from various error formats
+  const getErrorMessage = (err) => {
+    if (err?.response?.data?.detail) {
+      const detail = err.response.data.detail;
+      // Check if detail is an array (validation errors)
+      if (Array.isArray(detail) && detail.length > 0) {
+        // Format validation errors into a readable string
+        return detail.map(d => d.msg || d.message || JSON.stringify(d)).join(', ');
+      }
+      // If detail is a string, return it
+      if (typeof detail === 'string') {
+        return detail;
+      }
+      // If detail is an object, stringify it safely
+      if (typeof detail === 'object') {
+        return detail.msg || detail.message || 'An error occurred';
+      }
+    }
+    return err?.message || 'An unexpected error occurred';
+  };
+
   // --- Payment Handlers ---
   const handlePayPalClick = async () => {
     if (!user || !service) {
@@ -95,7 +116,7 @@ function Payment({ user, showToast }) {
         throw new Error('Failed to create PayPal order.');
       }
     } catch (err) {
-      const message = err?.response?.data?.detail || err.message || 'Unable to create PayPal order.';
+      const message = getErrorMessage(err);
       setError(message);
       showToast(message, 'error');
     } finally {
@@ -103,87 +124,87 @@ function Payment({ user, showToast }) {
     }
   };
 
-  const handleCardPayment = async () => {
-    if (!user || !service) {
-      showToast('Please login and select a service first.', 'error');
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${API}/payments/initiate-card`,
-        {
-          amount: Number(service.price),
-          service_id: service.id,
-          currency: 'USD',
-          user_id: user.id,
-        }
-      );
-      const { success, payment_url, payment_id } = response.data;
-      if (success && payment_url) {
-        setPaymentStep('card-flow');
-        showToast('Redirecting to card payment...', 'success');
-        setTimeout(() => {
-          window.location.href = payment_url;
-        }, 1100);
-      } else {
-        throw new Error('Failed to initiate card payment.');
+   const handleCardPayment = async () => {
+  if (!user || !service) {
+    showToast('Please login and select a service first.', 'error');
+    return;
+  }
+  setError(null);
+  setLoading(true);
+  try {
+    const response = await axios.post(
+      `${API}/payments/initiate-card`,
+      {
+        amount: Number(service.price),
+        service_id: service.id,
+        currency: 'USD',
+        user_id: user.id,
+        email: user.email  // Add user's email
       }
-    } catch (err) {
-      const message = err?.response?.data?.detail || err.message || 'Unable to initiate card payment.';
-      setError(message);
-      showToast(message, 'error');
-    } finally {
-      setLoading(false);
+    );
+    const { success, payment_url, payment_id } = response.data;
+    if (success && payment_url) {
+      setPaymentStep('card-flow');
+      showToast('Redirecting to card payment...', 'success');
+      setTimeout(() => {
+        window.location.href = payment_url;
+      }, 1100);
+    } else {
+      throw new Error(response.data.error || 'Failed to initiate card payment.');
     }
-  };
+  } catch (err) {
+    const message = getErrorMessage(err);
+    setError(message);
+    showToast(message, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleMoMoPayment = async () => {
-    if (!user || !service) {
-      showToast('Please login and select a service first.', 'error');
-      return;
-    }
-    if (!momoPhoneNumber) {
-      setError('Please enter your mobile number for MoMo payment.');
-      showToast('Please enter your mobile number.', 'error');
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${API}/payments/initiate-momo`,
-        {
-          amount: Number(service.price),
-          service_id: service.id,
-          currency: 'USD',
-          user_id: user.id,
-          phone_number: momoPhoneNumber,
-        }
-      );
-      const { success, payment_id, momo_reference } = response.data;
-      if (success && momo_reference) {
-        setPaymentStep('momo-flow');
-        showToast('MoMo payment initiated. Please approve on your phone.', 'success');
-      } else {
-        throw new Error('Failed to initiate MoMo payment.');
+const handleMoMoPayment = async () => {
+  if (!user || !service) {
+    showToast('Please login and select a service first.', 'error');
+    return;
+  }
+  if (!momoPhoneNumber) {
+    setError('Please enter your mobile number for MoMo payment.');
+    showToast('Please enter your mobile number.', 'error');
+    return;
+  }
+  setError(null);
+  setLoading(true);
+  try {
+    const response = await axios.post(
+      `${API}/payments/initiate-momo`,
+      {
+        amount: Number(service.price),
+        service_id: service.id,
+        currency: 'USD',
+        user_id: user.id,
+        phone_number: momoPhoneNumber
       }
-    } catch (err) {
-      const message = err?.response?.data?.detail || err.message || 'Unable to initiate MoMo payment.';
-      setError(message);
-      showToast(message, 'error');
-    } finally {
-      setLoading(false);
+    );
+    const { success, momo_reference } = response.data;
+    if (success && momo_reference) {
+      setPaymentStep('momo-flow');
+      showToast('MoMo payment initiated. Please approve on your phone.', 'success');
+    } else {
+      throw new Error(response.data.error || 'Failed to initiate MoMo payment.');
     }
-  };
+  } catch (err) {
+    const message = getErrorMessage(err);
+    setError(message);
+    showToast(message, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleUnsupportedPayment = (method) => {
     setUnsupportedPaymentMethod(method);
     setShowModal(true);
     showToast(`${method} is currently unavailable.`, 'info');
   };
-
 
   const handleProceed = () => {
     if (selectedMethod === 'paypal') {
